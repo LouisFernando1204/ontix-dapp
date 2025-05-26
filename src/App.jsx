@@ -15,6 +15,7 @@ import Events from "./views/Events";
 import EventDetail from "./views/EventDetail";
 import Verfication from "./views/Verfication";
 import History from "./views/History";
+import Missing from "./views/Missing";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -51,6 +52,7 @@ const App = () => {
         <Route path="/event/:id" element={<EventDetail />} />
         <Route path="/ticket-verification" element={<Verfication />} />
         <Route path="/transaction-history" element={<History />} />
+        <Route path="*" element={<Missing />} />
       </Route>
     </Routes>
   )
