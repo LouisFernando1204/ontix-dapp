@@ -1,4 +1,41 @@
 @import "tailwindcss";
+@import "flowbite";
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+@theme {
+  --color-primary: #FFC300;
+  --color-complementary: #3000ff;
+  --color-dark-orange: #ff8c00;
+  --color-bright-yellow: #ffdd00;
+  --color-dark-yellow: #e6c200;
+  --color-coral: #ff5733;
+  --color-sky-blue: #00b4d8;
+  --color-almost-black: #1a1a1a;
+  --color-light-gray: #f5f5f5;
+  --color-secondary: #F8F9FA;
+
+  --font-poppins: "Poppins", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-lato: "Lato", sans-serif;
+
+  --shadow-input: 0px 2px 3px -1px rgba(0,0,0,0.1), 0px 1px 0px 0px rgba(25,28,33,0.02), 0px 0px 0px 1px rgba(25,28,33,0.08);
+
+  --spacing-72: 18rem;
+  --spacing-84: 21rem;
+  --spacing-96: 24rem;
+
+  --animation-blink: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
