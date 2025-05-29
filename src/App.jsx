@@ -50,6 +50,10 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<Events />} />
         <Route path="/event/:id" element={<EventDetail />} />
+        
+        {/* ini buat dummy aja yaa, hapus kalo udh disambung */}
+        <Route path="/event-detail" element={<EventDetail />} /> 
+        
         <Route path="/ticket-verification" element={<Verfication />} />
         <Route path="/transaction-history" element={<History />} />
         <Route path="*" element={<Missing />} />

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import image1 from "/images/home_1.jpg";
 import image2 from "/images/home_2.jpg";
 import image3 from "/images/home_3.jpg";
+import LoadingScreen from "../components/ui/loading-screen";
 
 const images = [image1, image2, image3];
 
@@ -45,12 +46,12 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (isLoading) return <div className="text-center p-8 text-gray-500">Loading OnTix...</div>;
-  if (error) return <div className="text-center p-8 text-red-600">Error: {error}</div>;
+if (isLoading) return <LoadingScreen />;
+if (error) return <div className="text-center p-8 text-red-600">Error: {error}</div>;
 
   return (
     <>
-      <div className="font-lato h-screen w-full -mt-12 md:-mt-32">
+      <div className="font-lato h-screen w-full -mt-12 md:-mt-24">
         <div className="relative w-full overflow-hidden">
           <div
             className="flex w-full transition-transform duration-500 ease-in-out"
@@ -77,7 +78,7 @@ const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 1 }}
-              className="text-2xl md:text-3xl lg:text-5xl font-black text-center"
+              className="text-3xl md:text-5xl lg:text-6xl font-black text-center"
             >
               Revolutionizing Events with NFTs & Web3
             </motion.h1>
@@ -93,7 +94,7 @@ const Home = () => {
         </div>
       </div>
 
-      <section className="py-16 px-6 md:px-12 lg:px-20 bg-lightGray">
+      <section className="py-16 px-10 md:px-16 lg:px-24 bg-white">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,11 +126,11 @@ const Home = () => {
               transition={{ duration: 0.5 }}
               className="cursor-pointer rounded-lg"
             >
-              <div className="text-center p-6 bg-darkOrange text-secondary backdrop-blur-lg rounded-lg shadow-lg transition-all hover:scale-105 duration-500 ease-in-out hover:shadow-2xl">
+              <div className="text-center p-6 bg-black text-secondary backdrop-blur-lg rounded-xl shadow-lg transition-all hover:scale-105 duration-500 ease-in-out hover:shadow-2xl">
                 <div className="flex items-center justify-center mb-4">
                   {benefit.icon()}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{benefit.header}</h3>
+                <h3 className="text-xl text-pink-500 font-semibold mb-2">{benefit.header}</h3>
                 <p>{benefit.description}</p>
               </div>
             </motion.div>
