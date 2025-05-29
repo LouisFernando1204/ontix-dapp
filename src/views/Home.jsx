@@ -51,7 +51,7 @@ if (error) return <div className="text-center p-8 text-red-600">Error: {error}</
 
   return (
     <>
-      <div className="font-lato h-screen w-full -mt-12 md:-mt-24">
+      <div className="font-lato w-full -mt-12 md:-mt-24">
         <div className="relative w-full overflow-hidden">
           <div
             className="flex w-full transition-transform duration-500 ease-in-out"

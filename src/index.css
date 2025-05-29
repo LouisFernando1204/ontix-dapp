@@ -4,6 +4,18 @@
 @import "tailwindcss";
 @import "flowbite";
 
+/* Remove spinner for number input on Chrome, Safari */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove spinner for Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 @theme {
   --color-primary: #FFC300;
   --color-complementary: #3000ff;
