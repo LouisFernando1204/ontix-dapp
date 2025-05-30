@@ -96,14 +96,14 @@ const Verification = () => {
 
   useEffect(() => {
     if (showPopup) {
-      const timer = setTimeout(() => setShowPopup(false), 2000);
+      const timer = setTimeout(() => setShowPopup(false), 1500);
       return () => clearTimeout(timer);
     }
   }, [showPopup]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-6 flex gap-6">
-      <audio ref={beepSoundRef} src="/beep.mp3" preload="auto" />
+      <audio ref={beepSoundRef} src="audio/beeb.mp3" preload="auto" />
       <div className="flex-1 max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
