@@ -13,7 +13,6 @@ const Navbar = ({
         <div className="w-full text-white shadow-lg">
             <nav className="bg-pink-100 w-full border-b border-pink-700">
                 <div className="max-w-screen-xl flex items-center justify-around mx-auto px-6 py-6 md:py-4">
-                    {/* Logo */}
                     <a href="/" className="flex items-center space-x-3">
                         <img
                             src={OnTixLogo}
@@ -21,13 +20,12 @@ const Navbar = ({
                             className="w-20"
                         />
                     </a>
-                    {/* Navigation Links (Centered) */}
                     <div className="hidden md:flex justify-center space-x-8 mx-auto">
                         {navList.map((item, index) => (
                             <Link
                                 to={item.url}
                                 key={index}
-                                className="text-slate-900 hover:text-white hover:bg-pink-700 py-2 px-4 rounded transition duration-200"
+                                className="text-black hover:text-white hover:bg-pink-700 py-2 px-4 font-medium rounded transition duration-200"
                             >
                                 {item.title}
                             </Link>

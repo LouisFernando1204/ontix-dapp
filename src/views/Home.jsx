@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
 import image1 from "/images/home_1.jpg";
 import image2 from "/images/home_2.jpg";
 import image3 from "/images/home_3.jpg";
@@ -10,8 +10,8 @@ const images = [image1, image2, image3];
 
 const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [index, setIndex] = useState(0);
+  const navigate = useNavigate();
 
   const onTixBenefits = [
     {
@@ -31,11 +31,54 @@ const Home = () => {
     },
   ];
 
+  const sampleEvents = [
+    {
+      idEvent: "1230",
+      name: "Nulbarich CLOSE A CHAPTER",
+      location: "BUDOKAN",
+      description: "A premier event showcasing the latest in tech innovation.",
+      eventOrganizer: "Tech Foundation",
+      resellerName: null,
+      ticketPrice: "0.08",
+      startTime: "2025-04-30",
+      endTime: "2025-06-30",
+      image: [image1],
+    },
+    {
+      idEvent: "1231",
+      name: "Tech Halo 2025",
+      location: "Jakarta Convention Center",
+      description: "Innovation. Disruption. Future of tech.",
+      eventOrganizer: "Halo Corp",
+      resellerName: "ResellerX",
+      ticketPrice: "0.12",
+      startTime: "2025-05-10",
+      endTime: "2025-05-15",
+      image: [image2],
+    },
+    {
+      idEvent: "1232",
+      name: "Jazz for Java",
+      location: "Yogyakarta",
+      description: "An immersive musical night in the heart of Java.",
+      eventOrganizer: "Jazz Indonesia",
+      resellerName: null,
+      ticketPrice: "0.06",
+      startTime: "2025-06-01",
+      endTime: "2025-06-02",
+      image: [image3],
+    },
+  ];
+
+  const formatDate = (dateString) => {
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-GB', options);
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -46,8 +89,7 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-if (isLoading) return <LoadingScreen />;
-if (error) return <div className="text-center p-8 text-red-600">Error: {error}</div>;
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <>
@@ -65,9 +107,7 @@ if (error) return <div className="text-center p-8 text-red-600">Error: {error}</
               />
             ))}
           </div>
-
           <div className="absolute top-0 left-0 w-full h-full bg-black opacity-40 z-0"></div>
-
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -94,35 +134,17 @@ if (error) return <div className="text-center p-8 text-red-600">Error: {error}</
         </div>
       </div>
 
-      <section className="py-16 px-10 md:px-16 lg:px-24 bg-white">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 1 }}
-          className="text-3xl font-bold text-darkOrange text-center mb-8"
-        >
+      <section className="pt-16 px-10 md:px-16 lg:px-24">
+        <h2 className="text-3xl font-bold text-darkOrange text-center mb-8">
           Why OnTix is the Future of Event Ticketing?
-        </motion.h2>
+        </h2>
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.2 },
-            },
-          }}
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {onTixBenefits.map((benefit, index) => (
             <motion.div
               key={index}
-              variants={{
-                hidden: { opacity: 0, scale: 0.9 },
-                visible: { opacity: 1, scale: 1 },
-              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               className="cursor-pointer rounded-lg"
             >
@@ -135,9 +157,52 @@ if (error) return <div className="text-center p-8 text-red-600">Error: {error}</
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </section>
-      
+
+      <section className="px-10 md:px-16 lg:px-24 pt-24 pb-16">
+        <h2 className="text-3xl text-center font-bold text-darkOrange mb-6">Featured Events</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sampleEvents.map((event, index) => (
+            <motion.div
+              key={`${event.idEvent}-${index}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-black rounded-xl shadow-md overflow-hidden hover:scale-105 transition-transform duration-200 cursor-pointer relative"
+              onClick={() => navigate(`/event/${event.idEvent}`)}
+            >
+              <div className={`absolute top-2 right-2 text-white text-md px-2 py-1 rounded shadow ${event.resellerName ? 'bg-amber-600' : 'bg-blue-600'}`}>
+                {event.resellerName ? 'Reseller' : 'Official'}
+              </div>
+              <img
+                src={event.image[0]}
+                alt={event.name}
+                className="w-full h-72 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="text-xl font-bold text-pink-600 mb-1">{event.name}</h3>
+                <div className="flex items-center text-white mb-1 space-x-2">
+                  <span className="font-medium">{event.ticketPrice} ETH</span>
+                  <span>•</span>
+                  <span>{event.location}</span>
+                </div>
+                {(() => {
+                  const now = new Date();
+                  const end = new Date(event.endTime);
+                  const timeDiff = Math.max(end - now, 0);
+                  const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                  return (
+                    <p className="text-sm text-gray-300">
+                      {formatDate(event.endTime)} ({daysLeft} day{daysLeft !== 1 ? "s" : ""} left)
+                    </p>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
     </>
   );
 };
