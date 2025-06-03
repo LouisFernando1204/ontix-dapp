@@ -33,12 +33,13 @@ const EventDetail = () => {
           eventOrganizer: "Tech Foundation",
           resellerName: "Andy",
           ticketPrice: "0.08",
+          resaleCap: "0.20",
           startTime: "2025-04-30",
           endTime: "2025-06-30",
           resaleEnd: "2025-07-05",
           image: [
             "https://di1w2o32ai2v6.cloudfront.net/images/thumbnails/1920/1080/detailed/10/NULBARICH_CLOSEACHAPTER_169_A.jpg",
-            "/public/images/home_3.jpg",
+            "/src/assets/home_3.jpg",
             "https://dynamicmedia.livenationinternational.com/Media/c/g/u/3afea2b8-76d6-4884-a2f4-1bcf58c53f60.jpg?format=webp&width=3840&quality=75"
           ],
         },

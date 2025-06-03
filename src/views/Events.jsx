@@ -42,6 +42,7 @@ const Events = () => {
           eventOrganizer: "Tech Foundation",
           resellerName: null,
           ticketPrice: "0.08",
+          resaleCap: "0.20",
           startTime: "2025-04-30",
           endTime: "2025-06-30",
           resaleEnd: "2025-07-05",
@@ -62,6 +63,7 @@ const Events = () => {
           eventOrganizer: "Tech Foundation",
           resellerName: "Lofer",
           ticketPrice: "0.11",
+          resaleCap: "0.20",
           startTime: "2025-04-30",
           endTime: "2025-06-30",
           image: ["/images/home_1.jpg"]
@@ -74,6 +76,7 @@ const Events = () => {
           eventOrganizer: "Tech Foundation",
           resellerName: "Joed",
           ticketPrice: "0.10",
+          resaleCap: "0.20",
           startTime: "2025-04-30",
           endTime: "2025-06-30",
           image: [
@@ -180,8 +183,8 @@ const Events = () => {
           <div className="grid grid-cols-2 gap-4">
             <input className="border px-3 py-2 rounded" placeholder="Event Name" onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             <input className="border px-3 py-2 rounded" placeholder="Location" onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-            <input className="border px-3 py-2 rounded" placeholder="Organizer" onChange={(e) => setFormData({ ...formData, eventOrganizer: e.target.value })} />
             <input className="border px-3 py-2 rounded" placeholder="Ticket Price (ETH)" onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value })} />
+            <input className="border px-3 py-2 rounded" placeholder="Resale Cap" onChange={(e) => setFormData({ ...formData, resaleCap: e.target.value })} />
             <div className="flex flex-col">
               <label className="text-sm mb-1">Start Date</label>
               <input type="date" className="border px-3 py-2 rounded" onChange={(e) => setFormData({ ...formData, startTime: e.target.value })} />

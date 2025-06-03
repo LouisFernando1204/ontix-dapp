@@ -1,9 +1,9 @@
  import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import image1 from "/images/home_1.jpg";
-import image2 from "/images/home_2.jpg";
-import image3 from "/images/home_3.jpg";
+import image1 from "/src/assets/home_1.jpg";
+import image2 from "/src/assets/home_2.jpg";
+import image3 from "/src/assets/home_3.jpg";
 import LoadingScreen from "../components/ui/loading-screen";
 
 const images = [image1, image2, image3];
@@ -40,6 +40,7 @@ const Home = () => {
       eventOrganizer: "Tech Foundation",
       resellerName: null,
       ticketPrice: "0.08",
+      resaleCap: "0.20",
       startTime: "2025-04-30",
       endTime: "2025-06-30",
       image: [image1],
@@ -52,6 +53,7 @@ const Home = () => {
       eventOrganizer: "Halo Corp",
       resellerName: "ResellerX",
       ticketPrice: "0.12",
+      resaleCap: "0.20",
       startTime: "2025-05-10",
       endTime: "2025-05-15",
       image: [image2],
@@ -64,6 +66,7 @@ const Home = () => {
       eventOrganizer: "Jazz Indonesia",
       resellerName: null,
       ticketPrice: "0.06",
+      resaleCap: "0.20",
       startTime: "2025-06-01",
       endTime: "2025-06-02",
       image: [image3],
