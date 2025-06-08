@@ -7,8 +7,8 @@ import {
 } from "@reown/appkit/react";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 import { holesky } from "@reown/appkit/networks";
-import { Route, Routes, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import Layout from "./components/fixed/Layout"
 import Home from "./views/Home"
 import Events from "./views/Events";
@@ -16,7 +16,6 @@ import EventDetail from "./views/EventDetail";
 import Verfication from "./views/Verfication";
 import History from "./views/History";
 import Missing from "./views/Missing";
-import Tes from "./views/tes";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -42,6 +41,10 @@ const App = () => {
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
 
+  useEffect(() => {
+    console.log("Connected Address:", address)
+  }, [address]);
+
   return (
     <Routes>
       <Route
@@ -49,16 +52,11 @@ const App = () => {
         element={<Layout handleConnect={open} connectedAddress={address} />}
       >
         <Route path="/" element={<Home />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/event/:id" element={<EventDetail />} />
-        
-        {/* ini buat dummy aja yaa, hapus kalo udh disambung */}
-        <Route path="/event-detail" element={<EventDetail />} /> 
-        
-        <Route path="/ticket-verification" element={<Verfication />} />
-        <Route path="/transaction-history" element={<History />} />
-        <Route path="/tes" element={<Tes />} />
-        <Route path="*" element={<Tes />} />
+        <Route path="/events" element={<Events walletProvider={walletProvider} connectedAddress={address} />} />
+        <Route path="/event/:id" element={<EventDetail walletProvider={walletProvider} connectedAddress={address} />} />
+        <Route path="/ticket-verification" element={<Verfication walletProvider={walletProvider} connectedAddress={address} />} />
+        <Route path="/transaction-history" element={<History walletProvider={walletProvider} connectedAddress={address} />} />
+        <Route path="*" element={<Missing />} />
       </Route>
     </Routes>
   )

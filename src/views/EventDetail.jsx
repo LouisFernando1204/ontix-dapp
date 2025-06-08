@@ -1,71 +1,337 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import LoadingScreen from "../components/ui/loading-screen";
+import { getAllEvents } from "../servers/event";
+import { getEventDetail, getEventProceeds, withdrawEventProceeds } from "../services/event";
+import { errorMessage, formatEventDuration, formatFullDateTime, normalModal, successModal } from "../utils/helper";
+import { useSearchParams } from "react-router-dom";
+import { buyTickets } from "../services/ticket";
+import { createHistory, deleteHistory } from "../servers/history";
+import { deleteResale, getAllResales } from "../servers/resale";
+import { buyResaleTickets, getResalePrice, getResaleSeller } from "../services/resale";
 
-const EventDetail = () => {
-  const { id } = useParams();
+const EventDetail = ({ walletProvider, connectedAddress }) => {
   const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isTicketOfficialAvailable, setIsTicketOfficialAvailable] = useState(true);
+  const [isTicketResellerAvailable, setIsTicketResellerAvailable] = useState(true);
+  const [eventProceeds, setEventProceeds] = useState(0);
+  const [updateView, setUpdateView] = useState(false);
 
-  const formatDate = (dateString) => {
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-GB', options);
-  };
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate()
 
-  const daysLeft = (endTime) => {
-    const now = new Date();
-    const end = new Date(endTime);
-    const timeDiff = Math.max(end - now, 0);
-    return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-  };
+  const eventBy = searchParams.get("by");
 
-  const fetchEvent = async () => {
-    setLoading(true);
-    try {
-      const mockData = [
-        {
-          idEvent: "1230",
-          name: "Nulbarich CLOSE A CHAPTER",
-          location: "BUDOKAN",
-          description: "A premier event showcasing the latest in tech innovation.",
-          eventOrganizer: "Tech Foundation",
-          resellerName: "Andy",
-          ticketPrice: "0.08",
-          resaleCap: "0.20",
-          startTime: "2025-04-30",
-          endTime: "2025-06-30",
-          resaleEnd: "2025-07-05",
-          image: [
-            "https://di1w2o32ai2v6.cloudfront.net/images/thumbnails/1920/1080/detailed/10/NULBARICH_CLOSEACHAPTER_169_A.jpg",
-            "/src/assets/home_3.jpg",
-            "https://dynamicmedia.livenationinternational.com/Media/c/g/u/3afea2b8-76d6-4884-a2f4-1bcf58c53f60.jpg?format=webp&width=3840&quality=75"
-          ],
-        },
-      ];
-      const found = mockData.find((e) => e.idEvent === id);
-      setEvent(found);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (eventBy == "official") {
+      checkTicketOfficialAvailability();
+      fetchEventOfficial();
+    } else if (eventBy == "reseller") {
+      checkTicketResellerAvailability();
+      fetchEventReseller();
+    } else {
+      fetchEventProceeds();
+      fetchEventOfficial();
+    }
+  }, [id, updateView, eventProceeds]);
+
+  const errorScenario = (errorMsg = "Unexpected Error. Please try again later!") => {
+    setIsLoading(false);
+    if (!isLoading) {
+      setTimeout(() => {
+        normalModal("error", "Oops...", errorMsg);
+      }, 1000);
     }
   };
 
-  useEffect(() => {
-    fetchEvent();
-  }, [id]);
+  const fetchEventOfficial = async () => {
+    setIsLoading(true);
+    try {
+      const allEvents = await getAllEvents();
+      if (allEvents) {
+        const filteredEvent = allEvents.data.find((event) =>
+          event._id == id
+        );
+        const data = await getEventDetail(filteredEvent._id);
+        const event = {
+          id: filteredEvent._id,
+          name: filteredEvent.name,
+          location: filteredEvent.location,
+          description: filteredEvent.description,
+          images: filteredEvent.image,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          ticketPrice: data.ticketPrice,
+          maxTickets: data.maxTickets,
+          resaleStart: data.resaleStart,
+          resaleEnd: data.resaleEnd,
+          resalePriceCap: data.resalePriceCap,
+          creator: data.creator,
+          ticketsSold: data.ticketsSold
+        };
+        setEvent(event);
+      }
+    } catch (error) {
+      console.log(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.response && error.response.data && error.response.data.message) {
+        return errorScenario(error.response.data.message);
+      }
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      }
+      return errorScenario(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchEventReseller = async () => {
+    setIsLoading(true);
+    try {
+      const allEvents = await getAllResales();
+      if (allEvents) {
+        const filteredEvent = allEvents.data.data.find((event) =>
+          event.idTicket.toLowerCase() == id.toLowerCase()
+        );
+        console.log("filteredEvent:", filteredEvent);
+        const data = await getEventDetail(filteredEvent.idEvent);
+        const resalePrice = await getResalePrice(filteredEvent.idTicket);
+        const resaleSeller = await getResaleSeller(filteredEvent.idTicket);
+        const event = {
+          id: filteredEvent.event.id,
+          name: filteredEvent.event.name,
+          location: filteredEvent.event.location,
+          description: filteredEvent.event.description,
+          images: filteredEvent.event.image,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          ticketPrice: resalePrice,
+          maxTickets: data.maxTickets,
+          resaleStart: data.resaleStart,
+          resaleEnd: data.resaleEnd,
+          creator: resaleSeller,
+          ticketsSold: data.ticketsSold
+        };
+        setEvent(event);
+      }
+    } catch (error) {
+      console.log(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.response && error.response.data && error.response.data.message) {
+        return errorScenario(error.response.data.message);
+      }
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      }
+      return errorScenario(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleQtyChange = (amount) => {
     setQuantity((prev) => Math.max(1, prev + amount));
   };
 
-  const handleBuy = () => {
-    alert(`Buying ${quantity} ticket(s) for ${event.name} at ${event.ticketPrice} ETH each`);
+  const handleBuyTicket = async () => {
+    setIsLoading(true);
+    let historyResponses = [];
+    if (!connectedAddress) {
+      return errorScenario("Please connect to your wallet first.");
+    }
+    try {
+      if (event.creator.toLowerCase() == connectedAddress.toLowerCase()) {
+        return errorScenario("You can't buy your own ticket again.");
+      }
+      const tx = await buyTickets(id, quantity, walletProvider);
+      const ticketIds = tx.data.event.ticketIds;
+      const buyer = tx.data.event.buyer;
+      for (const ticketId of ticketIds) {
+        const res = await createHistory(id, ticketId.toString(), buyer);
+        historyResponses.push(res);
+      }
+      const eventArgsArray = ticketIds.map((ticketId) => ({
+        ticketId,
+        buyer
+      }));
+      setTimeout(() => {
+        successModal("Ticket Purchased Successfully!", tx.data.hash, eventArgsArray);
+        navigate(`/transaction-history`);
+      }, 1000);
+    } catch (error) {
+      console.error(error);
+      let errorMsg = "An unexpected error occurred.";
+      for (const history of historyResponses) {
+        await deleteHistory(history.data.data._id);
+      }
+      if (error.response?.data?.message) {
+        return errorScenario(error.response.data.message);
+      }
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      }
+      return errorScenario(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (loading || !event) return <LoadingScreen />;
+  const handleBuyResaleTicket = async () => {
+    setIsLoading(true);
+    let historyResponses = [];
+    if (!connectedAddress) {
+      return errorScenario("Please connect to your wallet first.");
+    }
+    try {
+      const res = await getAllResales();
+      const filtered = res.data.data.find((event) =>
+        event.idTicket.toLowerCase() == id.toLowerCase()
+      );
+      console.log("filtered:", filtered);
+      const resaleSeller = await getResaleSeller(filtered.idTicket);
+      if (resaleSeller.toLowerCase() == connectedAddress.toLowerCase()) {
+        return errorScenario("You can't buy your own ticket again.");
+      }
+      const resalePrice = await getResalePrice(filtered.idTicket);
+      console.log("resalePrice:", resalePrice);
+      const tx = await buyResaleTickets([filtered.idTicket], resalePrice, walletProvider);
+      const ticketIds = tx.data.event.ticketIds;
+      const fromAddress = tx.data.event.fromAddress;
+      const toAddress = tx.data.event.toAddress;
+      for (const ticketId of ticketIds) {
+        const res = await createHistory(id, ticketId.toString(), toAddress);
+        historyResponses.push(res);
+      }
+      await deleteResale(filtered._id);
+      const eventArgsArray = ticketIds.map((ticketId) => ({
+        ticketId,
+        fromAddress,
+        toAddress
+      }));
+      setTimeout(() => {
+        successModal("Ticket Resold Successfully!", tx.data.hash, eventArgsArray);
+        navigate(`/transaction-history`);
+      }, 1000);
+    } catch (error) {
+      console.error(error);
+      let errorMsg = "An unexpected error occurred.";
+      for (const history of historyResponses) {
+        await deleteHistory(history.data.data._id);
+      }
+      if (error.response?.data?.message) {
+        return errorScenario(error.response.data.message);
+      }
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      }
+      return errorScenario(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkTicketOfficialAvailability = async () => {
+    setIsLoading(true);
+    try {
+      const event = await getEventDetail(id);
+      if (event) {
+        if (event.ticketsSold == event.maxTickets) {
+          setIsTicketOfficialAvailable(false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      } else {
+        return errorScenario(errorMsg);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkTicketResellerAvailability = async () => {
+    setIsLoading(true);
+    try {
+      const resalePrice = await getResalePrice(id);
+      console.log("resalePrice availability:", resalePrice);
+      if (resalePrice) {
+        if (resalePrice <= 0) {
+          setIsTicketResellerAvailable(false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      } else {
+        return errorScenario(errorMsg);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleWithdrawEventProceeds = async () => {
+    setIsLoading(true);
+    if (!connectedAddress) {
+      return errorScenario("Please connect to your wallet first.");
+    }
+    try {
+      const tx = await withdrawEventProceeds(id, walletProvider);
+      const eventId = tx.data.event.eventId;
+      const creator = tx.data.event.creator;
+      const amount = tx.data.event.amount;
+      setUpdateView(prev => !prev);
+      setTimeout(() => {
+        successModal("Event Proceeds Withdrawn Successfully!", tx.data.hash, [
+          {
+            eventId: eventId,
+            creator: creator,
+            amount: amount
+          }
+        ]);
+      }, 1000);
+    } catch (error) {
+      console.error(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      } else {
+        return errorScenario(errorMsg);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchEventProceeds = async () => {
+    setIsLoading(true);
+    try {
+      const proceeds = await getEventProceeds(id);
+      setEventProceeds(proceeds);
+    } catch (error) {
+      console.error(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.reason) {
+        return errorScenario(errorMessage(error));
+      } else {
+        return errorScenario(errorMsg);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading || !event) return <LoadingScreen />;
 
   return (
     <div className="px-12 py-16 w-full bg-secondary flex flex-col grow">
@@ -73,12 +339,12 @@ const EventDetail = () => {
         {/* Left column: Carousel view */}
         <div className="w-full">
           <img
-            src={event.image[selectedImage]}
-            alt={`Event Main`}
+            src={event.images[selectedImage]}
+            alt={event.name}
             className="rounded-lg shadow-md w-full h-64 object-cover mb-4"
           />
           <div className="flex space-x-2 overflow-x-auto">
-            {event.image.map((img, idx) => (
+            {event.images.map((img, idx) => (
               <img
                 key={idx}
                 src={img}
@@ -99,63 +365,123 @@ const EventDetail = () => {
             <span>{event.location}</span>
           </div>
           <p className="text-sm text-gray-500">
-            Date: {formatDate(event.startTime)} – {formatDate(event.endTime)} ({daysLeft(event.endTime)} days left)
+            Held On: {formatEventDuration(event.startTime, event.endTime)}
           </p>
-          {event.resellerName && (
-            <p className="text-sm text-gray-500">Resale Ends: {formatDate(event.resaleEnd)}</p>
+          {eventBy == "official" || eventBy == "connectedAddress" && (
+            <p className="text-sm text-gray-500">Resale Ends: {formatFullDateTime(event.resaleEnd)}</p>
           )}
-          <p className="text-sm text-gray-500">Organizer: {event.eventOrganizer}</p>
-          <p className="text-gray-800">{event.description}</p>
+          <p className="text-sm text-gray-500">Created By: {event.creator}</p>
+          {
+            eventBy == "official" || eventBy == "connectedAddress" ? (
+              <p className="text-sm text-gray-500">Resale Price Cap: {event.resalePriceCap} ETH</p>
+            ) : null
+          }
           <p className="text-sm text-gray-500">
-            {event.resellerName ? (
-              <>Resale by: <span className="italic">{event.resellerName}</span></>
+            {eventBy == "reseller" ? (
+              <>Resale by: <span className="italic">{event.creator}</span></>
             ) : (
-              <>By: <span className="font-semibold">Official</span></>
+              <>By: <span className="font-semibold">{event.creator}</span></>
             )}
           </p>
+          <p className="text-gray-800">{event.description}</p>
         </div>
 
         {/* Right column: Purchase panel */}
-        <div className="h-fit bg-white rounded-lg shadow-lg p-6 space-y-4 border border-gray-200">
-          <div className="text-lg font-medium text-gray-700">
-            Price per ticket:
-            <span className="text-pink-600 font-bold ml-2">{event.ticketPrice ?? "0.05"} ETH</span>
+        <div className="flex flex-col space-y-4">
+          <div className="h-fit bg-white rounded-lg shadow-lg p-6 space-y-4 border border-gray-200">
+            {
+              eventBy == "connectedAddress" ? (
+                <div className="text-lg font-medium text-gray-700">
+                  Available Earnings to Withdraw:
+                  <span className="text-pink-600 font-bold ml-2">{eventProceeds ?? "0.05"} ETH</span>
+                </div>
+              ) : (
+                <div className="text-lg font-medium text-gray-700">
+                  Price per ticket:
+                  <span className="text-pink-600 font-bold ml-2">{event.ticketPrice ?? "0.05"} ETH</span>
+                </div>
+              )
+            }
+            {
+              eventBy === "connectedAddress" ? (
+                <button
+                  disabled={eventProceeds <= 0}
+                  onClick={() => handleWithdrawEventProceeds()}
+                  className={`w-full transition text-white font-semibold py-3 rounded-lg ${eventProceeds <= 0 ? "bg-gray-400 cursor-not-allowed" : "bg-pink-600 hover:bg-pink-700"
+                    }`}
+                >
+                  {eventProceeds <= 0
+                    ? "You’ve already withdrawn all earnings for this event."
+                    : "Withdraw My Event"}
+                </button>
+              ) : eventBy === "official" ? (
+                <>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handleQtyChange(-1)}
+                      className="bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="text"
+                      readOnly
+                      value={quantity}
+                      className="w-16 text-center border rounded-lg px-2 py-1"
+                    />
+                    <button
+                      onClick={() => handleQtyChange(1)}
+                      className="bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300"
+                    >
+                      +
+                    </button>
+                  </div>
+                </>
+              ) : null
+            }
+            {
+              eventBy !== "connectedAddress" && (
+                eventBy === "official" ? (
+                  !isTicketOfficialAvailable ? (
+                    <button
+                      disabled
+                      onClick={() => handleBuyTicket()}
+                      className="w-full bg-slate-300 transition text-white font-semibold py-3 rounded-lg"
+                    >
+                      SOLD OUT
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleBuyTicket()}
+                      className="w-full bg-pink-600 hover:bg-pink-700 transition text-white font-semibold py-3 rounded-lg"
+                    >
+                      Buy Now
+                    </button>
+                  )
+                ) : eventBy === "reseller" ? (
+                  !isTicketResellerAvailable ? (
+                    <button
+                      disabled
+                      onClick={() => handleBuyResaleTicket()}
+                      className="w-full bg-slate-300 transition text-white font-semibold py-3 rounded-lg"
+                    >
+                      SOLD OUT
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleBuyResaleTicket()}
+                      className="w-full bg-pink-600 hover:bg-pink-700 transition text-white font-semibold py-3 rounded-lg"
+                    >
+                      Buy Now
+                    </button>
+                  )
+                ) : null
+              )
+            }
           </div>
-
-          {event.resellerName ? (
-            <>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => handleQtyChange(-1)}
-                  className="bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300"
-                >
-                  -
-                </button>
-                <input
-                  type="text"
-                  readOnly
-                  value={quantity}
-                  className="w-16 text-center border rounded-lg px-2 py-1"
-                />
-                <button
-                  onClick={() => handleQtyChange(1)}
-                  className="bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300"
-                >
-                  +
-                </button>
-              </div>
-            </>
-          ) : null}
-
-          <button
-            onClick={handleBuy}
-            className="w-full bg-pink-600 hover:bg-pink-700 transition text-white font-semibold py-3 rounded-lg"
-          >
-            Buy Now
-          </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

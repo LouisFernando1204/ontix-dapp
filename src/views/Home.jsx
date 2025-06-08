@@ -1,17 +1,31 @@
- import { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import image1 from "/src/assets/home_1.jpg";
 import image2 from "/src/assets/home_2.jpg";
 import image3 from "/src/assets/home_3.jpg";
+import { errorMessage, formatDuration, normalModal } from "../utils/helper";
+import { getAllEvents } from "../servers/event";
+import { getEventDetail } from "../services/event";
 import LoadingScreen from "../components/ui/loading-screen";
-
-const images = [image1, image2, image3];
+import EmptyPage from "./EmptyPage";
 
 const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [index, setIndex] = useState(0);
+  const [events, setEvents] = useState([]);
+  const images = [image1, image2, image3];
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchEvents();
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const onTixBenefits = [
     {
@@ -31,66 +45,57 @@ const Home = () => {
     },
   ];
 
-  const sampleEvents = [
-    {
-      idEvent: "1230",
-      name: "Nulbarich CLOSE A CHAPTER",
-      location: "BUDOKAN",
-      description: "A premier event showcasing the latest in tech innovation.",
-      eventOrganizer: "Tech Foundation",
-      resellerName: null,
-      ticketPrice: "0.08",
-      resaleCap: "0.20",
-      startTime: "2025-04-30",
-      endTime: "2025-06-30",
-      image: [image1],
-    },
-    {
-      idEvent: "1231",
-      name: "Tech Halo 2025",
-      location: "Jakarta Convention Center",
-      description: "Innovation. Disruption. Future of tech.",
-      eventOrganizer: "Halo Corp",
-      resellerName: "ResellerX",
-      ticketPrice: "0.12",
-      resaleCap: "0.20",
-      startTime: "2025-05-10",
-      endTime: "2025-05-15",
-      image: [image2],
-    },
-    {
-      idEvent: "1232",
-      name: "Jazz for Java",
-      location: "Yogyakarta",
-      description: "An immersive musical night in the heart of Java.",
-      eventOrganizer: "Jazz Indonesia",
-      resellerName: null,
-      ticketPrice: "0.06",
-      resaleCap: "0.20",
-      startTime: "2025-06-01",
-      endTime: "2025-06-02",
-      image: [image3],
-    },
-  ];
-
-  const formatDate = (dateString) => {
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-GB', options);
+  const errorScenario = (errorMsg = "Unexpected Error. Please try again later!") => {
+    setIsLoading(false);
+    if (!isLoading) {
+      setTimeout(() => {
+        normalModal("error", "Oops...", errorMsg);
+      }, 1000);
+    }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getAllEvents();
+      if (res) {
+        const allEvents = await Promise.all(
+          res.data.map(async (event, _) => {
+            const data = await getEventDetail(event._id);
+            return {
+              id: event._id,
+              name: event.name,
+              location: event.location,
+              description: event.description,
+              images: event.image,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              ticketPrice: data.ticketPrice,
+              maxTickets: data.maxTickets,
+              resaleStart: data.resaleStart,
+              resaleEnd: data.resaleEnd,
+              resalePriceCap: data.resalePriceCap,
+              creator: data.creator,
+              ticketsSold: data.ticketsSold
+            };
+          })
+        );
+        setEvents(allEvents);
+      }
+    } catch (error) {
+      console.log(error);
+      let errorMsg = "An unexpected error occurred.";
+      if (error.response && error.response.data && error.response.data.message) {
+        return errorScenario(error.response.data.message);
+      } else if (error.reason) {
+        return errorScenario(errorMessage(error));
+      } else {
+        return errorScenario(errorMsg);
+      }
+    } finally {
       setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    }
+  };
 
   if (isLoading) return <LoadingScreen />;
 
@@ -165,47 +170,44 @@ const Home = () => {
 
       <section className="px-10 md:px-16 lg:px-24 pt-24 pb-16">
         <h2 className="text-3xl text-center font-bold text-darkOrange mb-6">Featured Events</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sampleEvents.map((event, index) => (
-            <motion.div
-              key={`${event.idEvent}-${index}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="bg-black rounded-xl shadow-md overflow-hidden hover:scale-105 transition-transform duration-200 cursor-pointer relative"
-              onClick={() => navigate(`/event/${event.idEvent}`)}
-            >
-              <div className={`absolute top-2 right-2 text-white text-md px-2 py-1 rounded shadow ${event.resellerName ? 'bg-amber-600' : 'bg-blue-600'}`}>
-                {event.resellerName ? 'Reseller' : 'Official'}
-              </div>
-              <img
-                src={event.image[0]}
-                alt={event.name}
-                className="w-full h-72 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-pink-600 mb-1">{event.name}</h3>
-                <div className="flex items-center text-white mb-1 space-x-2">
-                  <span className="font-medium">{event.ticketPrice} ETH</span>
-                  <span>•</span>
-                  <span>{event.location}</span>
+        {events.length === 0 ? (
+          <EmptyPage text="No events available yet. Please check back later." />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event, index) => (
+              <motion.div
+                key={`${event.id}-${index}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-black rounded-xl shadow-md overflow-hidden hover:scale-105 transition-transform duration-200 cursor-pointer relative"
+                onClick={() => navigate(`/event/${event.id}?by=official`)}
+              >
+                <div className="absolute top-2 right-2 text-white text-md px-2 py-1 rounded shadow bg-blue-600">
+                  Official
                 </div>
-                {(() => {
-                  const now = new Date();
-                  const end = new Date(event.endTime);
-                  const timeDiff = Math.max(end - now, 0);
-                  const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-                  return (
-                    <p className="text-sm text-gray-300">
-                      {formatDate(event.endTime)} ({daysLeft} day{daysLeft !== 1 ? "s" : ""} left)
-                    </p>
-                  );
-                })()}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <img
+                  src={event.images[0]}
+                  alt={event.name}
+                  className="w-full h-72 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-xl font-bold text-pink-600 mb-1">{event.name}</h3>
+                  <div className="flex items-center text-white mb-1 space-x-2">
+                    <span className="font-medium">{event.ticketPrice} ETH</span>
+                    <span>•</span>
+                    <span>{event.location}</span>
+                  </div>
+                  <p className="text-sm text-gray-300">
+                    {formatDuration(event.startTime, event.endTime)}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
+
     </>
   );
 };

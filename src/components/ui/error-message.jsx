@@ -25,7 +25,7 @@ const ErrorMessage = ({ errorCode, errorName, errorMessage }) => {
                         duration: 1,
                         ease: [0.4, 0.0, 0.2, 1],
                     }}
-                    className="text-base font-semibold text-slate-950">{errorCode}</motion.p>
+                    className="text-base font-semibold text-pink-600">{errorCode}</motion.p>
                 <motion.h1
                     initial={{
                         opacity: 0,
@@ -70,7 +70,7 @@ const ErrorMessage = ({ errorCode, errorName, errorMessage }) => {
                     className="mt-10 flex items-center justify-center gap-x-6">
                     <button
                         onClick={handleGoHome}
-                        className="bg-slate-950 rounded-md hover:bg-gradient-to-b hover:from-slate-950 hover:to-slate-700 hover:text-white hover:shadow-xl hover:transition hover:duration-200 px-3.5 py-2.5 text-sm font-semibold text-white"
+                        className="bg-pink-600 rounded-md hover:bg-gradient-to-b hover:from-pink-500 hover:to-pink-400 hover:text-white hover:shadow-xl hover:transition hover:duration-200 px-3.5 py-2.5 text-sm font-semibold text-white"
                     >
                         Go back home
                     </button>

@@ -21,7 +21,7 @@ const Layout = ({ handleConnect, connectedAddress }) => {
   return (
     <div className="min-h-screen flex flex-col bg-secondary">
       <Navbar handleConnect={handleConnect} connectedAddress={connectedAddress} />
-      
+
       <main className="flex-grow">
         <BackgroundBeamsWithCollision className="h-full w-full flex flex-col items-center justify-center font-poppins">
           <Outlet />

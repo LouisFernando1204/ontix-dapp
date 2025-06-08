@@ -6,7 +6,7 @@ import OnTixLogo from "../../assets/OnTixLogo_ori.png";
 import MetaMaskWalletLogo from "../../assets/MetaMaskWalletLogo.svg";
 
 const Navbar = ({ connectedAddress, handleConnect }) => {
-  const location = useLocation(); // Get current URL path
+  const location = useLocation();
 
   return (
     <div className="w-full text-white shadow-lg">
@@ -38,7 +38,9 @@ const Navbar = ({ connectedAddress, handleConnect }) => {
           {/* Connect Wallet */}
           <div className="flex items-center space-x-3">
             <button
-              onClick={handleConnect}
+              onClick={() => {
+                handleConnect();
+              }}
               className="relative bg-slate-950 p-3 md:p-3.5 rounded-xl hover:scale-105 duration-200 flex items-center gap-2 shadow-md"
             >
               <span className="animate-ping absolute -top-1 -right-1 h-3 w-3 rounded-full bg-pink-700 opacity-75"></span>
