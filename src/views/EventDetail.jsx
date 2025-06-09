@@ -70,6 +70,7 @@ const EventDetail = ({ walletProvider, connectedAddress }) => {
           resaleStart: data.resaleStart,
           resaleEnd: data.resaleEnd,
           resalePriceCap: data.resalePriceCap,
+          availableTicket: data.maxTickets - data.ticketsSold,
           creator: data.creator,
           ticketsSold: data.ticketsSold
         };
@@ -204,7 +205,10 @@ const EventDetail = ({ walletProvider, connectedAddress }) => {
       const fromAddress = tx.data.event.fromAddress;
       const toAddress = tx.data.event.toAddress;
       for (const ticketId of ticketIds) {
-        const res = await createHistory(id, ticketId.toString(), toAddress);
+        const res = await createHistory(filtered.idEvent, ticketId.toString(), toAddress);
+        console.log("idEvent:", filtered.idEvent);
+        console.log("ticketId:", ticketId);
+        console.log("toAddress:", toAddress);
         historyResponses.push(res);
       }
       await deleteResale(filtered._id);
@@ -376,6 +380,10 @@ const EventDetail = ({ walletProvider, connectedAddress }) => {
               <p className="text-sm text-gray-500">Resale Price Cap: {event.resalePriceCap} ETH</p>
             ) : null
           }
+          {eventBy == "official" || eventBy == "connectedAddress" ? (
+            <p className="text-sm text-gray-500">Available Ticket: {event.availableTicket}</p>
+          ) :
+            null}
           <p className="text-sm text-gray-500">
             {eventBy == "reseller" ? (
               <>Resale by: <span className="italic">{event.creator}</span></>

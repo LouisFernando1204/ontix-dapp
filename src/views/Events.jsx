@@ -466,7 +466,7 @@ const Events = ({ walletProvider, connectedAddress }) => {
 
       <Dialog open={showModal} onClose={() => setShowModal(false)} className="fixed z-50 inset-0 flex items-center justify-center">
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
-        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-50">
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-50 max-h-[90vh] overflow-y-auto">
           <Dialog.Title className="text-xl font-bold mb-4 text-center">Create New Event</Dialog.Title>
           <div className="grid grid-cols-2 gap-4">
             <input
@@ -584,7 +584,7 @@ const Events = ({ walletProvider, connectedAddress }) => {
                     images.map((image, index) => (
                       <div
                         key={index}
-                        className="bg-gray-200 rounded-lg overflow-hidden"
+                        className="bg-gray-200 rounded-lg overflow-hidden w-48"
                       >
                         <img
                           src={image}

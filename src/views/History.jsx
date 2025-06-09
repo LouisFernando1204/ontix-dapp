@@ -39,13 +39,17 @@ const History = ({ walletProvider, connectedAddress }) => {
             const filtered = res.data.data.filter(
                 (history) => history.account.toLowerCase() === connectedAddress.toLowerCase()
             );
+            console.log("filtered:", filtered);
             if (filtered) {
                 const allTickets = await Promise.all(
                     filtered.map(async (ticket, _) => {
                         const data = await getEventDetail(ticket.idEvent);
                         const ticketResoldStatus = await checkTicketResoldStatus(ticket.idTicket);
+                        console.log(`ticketResoldStatus ${ticket.idTicket}:`, ticketResoldStatus);
                         const ticketTransferredStatus = await checkTicketTransferredStatus(ticket.idTicket);
+                        console.log(`ticketTransferredStatus ${ticket.idTicket}:`, ticketTransferredStatus);
                         const ticketValidatedStatus = await checkTicketValidatedStatus(ticket.idTicket);
+                        console.log(`ticketValidatedStatus ${ticket.idTicket}:`, ticketValidatedStatus);
                         return {
                             ticketId: ticket.idTicket,
                             eventId: ticket.event._id,
@@ -141,11 +145,12 @@ const History = ({ walletProvider, connectedAddress }) => {
 
     const checkTicketResoldStatus = async (ticketId) => {
         try {
-            const resaleSeller = await getResaleSeller(ticketId);
-            if (resaleSeller) {
-                if (resaleSeller.toLowerCase() == connectedAddress.toLowerCase()) {
+            const resalePrice = await getResalePrice(ticketId);
+            if (resalePrice) {
+                if (resalePrice <= 0) {
                     return true;
                 }
+                return false;
             }
         } catch (error) {
             console.log(error);
@@ -214,8 +219,10 @@ const History = ({ walletProvider, connectedAddress }) => {
             const owner = await getOwnerOfTicket(ticketId);
             if (owner) {
                 if (owner.toLowerCase() != connectedAddress.toLowerCase()) {
+                    console.log("owner:", owner);
                     return true;
                 }
+                return false;
             }
         } catch (error) {
             console.log(error);
@@ -235,6 +242,7 @@ const History = ({ walletProvider, connectedAddress }) => {
                 if (ticketValidated.isUsed) {
                     return true;
                 }
+                return false;
             }
         } catch (error) {
             console.log(error);
@@ -288,8 +296,12 @@ const History = ({ walletProvider, connectedAddress }) => {
                             <img
                                 src={ticket.images[0]}
                                 alt={ticket.name}
-                                className="w-full h-72 object-cover"
-                                onClick={ticket.resoldStatus || ticket.transferredStatus || ticket.validatedStatus ? null : () => showPopUpNFTQR(ticket.ticketId)}
+                                className="w-full h-72 object-cover cursor-pointer"
+                                onClick={
+                                    (!ticket.validatedStatus && (!ticket.resoldStatus || !ticket.transferredStatus))
+                                        ? () => showPopUpNFTQR(ticket.ticketId)
+                                        : null
+                                }
                             />
                             <div className="p-4">
                                 <div className="flex items-center text-white mb-1 space-x-2">
@@ -300,8 +312,8 @@ const History = ({ walletProvider, connectedAddress }) => {
                                 <div className="flex items-center text-white mb-1 space-x-2">
                                     <span>{ticket.resalePriceCap} ETH</span>
                                     <span>•</span>
-                                    <span className={`px-2 py-1 rounded text-xs font-medium ${ticket.validated ? "bg-green-600" : "bg-yellow-500"}`}>
-                                        {ticket.validated ? "Validated" : "Not Validated"}
+                                    <span className={`px-2 py-1 rounded text-xs font-medium ${ticket.validatedStatus ? "bg-green-600" : "bg-yellow-500"}`}>
+                                        {ticket.validatedStatus ? "Validated" : "Not Validated"}
                                     </span>
                                 </div>
                                 <p className="text-sm text-white line-clamp-3">At: {ticket.location}</p>
