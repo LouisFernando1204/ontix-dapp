@@ -6,7 +6,7 @@ import {
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
-import { holesky } from "@reown/appkit/networks";
+import { optimismSepolia } from "@reown/appkit/networks";
 import { Route, Routes } from "react-router-dom";
 import { useEffect } from "react";
 import Layout from "./components/fixed/Layout"
@@ -19,7 +19,7 @@ import Missing from "./views/Missing";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
-const networks = [holesky];
+const networks = [optimismSepolia];
 
 const metadata = {
   name: "OnTix",

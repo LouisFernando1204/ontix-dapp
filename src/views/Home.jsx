@@ -174,7 +174,7 @@ const Home = () => {
           <EmptyPage text="No events available yet. Please check back later." />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event, index) => (
+            {events.slice(0, 3).map((event, index) => (
               <motion.div
                 key={`${event.id}-${index}`}
                 initial={{ opacity: 0, y: 10 }}

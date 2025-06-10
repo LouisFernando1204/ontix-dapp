@@ -449,7 +449,7 @@ const Events = ({ walletProvider, connectedAddress }) => {
                 className="w-full h-72 object-cover"
               />
               <div className="p-4">
-                <h3 className="text-xl font-bold text-pink-600 mb-1">{event.name}, max: {event.maxTickets}, sold: {event.ticketsSold}</h3>
+                <h3 className="text-xl font-bold text-pink-600 mb-1">{event.name}</h3>
                 <div className="flex items-center text-white mb-1 space-x-2">
                   <span className="font-medium">{event.ticketPrice} ETH</span>
                   <span>•</span>

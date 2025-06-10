@@ -45,11 +45,9 @@ const History = ({ walletProvider, connectedAddress }) => {
                     filtered.map(async (ticket, _) => {
                         const data = await getEventDetail(ticket.idEvent);
                         const ticketResoldStatus = await checkTicketResoldStatus(ticket.idTicket);
-                        console.log(`ticketResoldStatus ${ticket.idTicket}:`, ticketResoldStatus);
                         const ticketTransferredStatus = await checkTicketTransferredStatus(ticket.idTicket);
-                        console.log(`ticketTransferredStatus ${ticket.idTicket}:`, ticketTransferredStatus);
                         const ticketValidatedStatus = await checkTicketValidatedStatus(ticket.idTicket);
-                        console.log(`ticketValidatedStatus ${ticket.idTicket}:`, ticketValidatedStatus);
+                        const ownershipOfTheTicketStatus = await checkOwnershipOfTheTicket(ticket.idTicket);
                         return {
                             ticketId: ticket.idTicket,
                             eventId: ticket.event._id,
@@ -68,7 +66,8 @@ const History = ({ walletProvider, connectedAddress }) => {
                             ticketsSold: data.ticketsSold,
                             resoldStatus: ticketResoldStatus,
                             transferredStatus: ticketTransferredStatus,
-                            validatedStatus: ticketValidatedStatus
+                            validatedStatus: ticketValidatedStatus,
+                            ownershipStatus: ownershipOfTheTicketStatus
                         };
                     })
                 );
@@ -143,26 +142,6 @@ const History = ({ walletProvider, connectedAddress }) => {
         }
     };
 
-    const checkTicketResoldStatus = async (ticketId) => {
-        try {
-            const resalePrice = await getResalePrice(ticketId);
-            if (resalePrice) {
-                if (resalePrice <= 0) {
-                    return true;
-                }
-                return false;
-            }
-        } catch (error) {
-            console.log(error);
-            let errorMsg = "An unexpected error occurred.";
-            if (error.reason) {
-                return errorScenario(errorMessage(error));
-            } else {
-                return errorScenario(errorMsg);
-            }
-        }
-    };
-
     const showPopUpTransferTicket = async (ticketIds) => {
         const { value: toAddress } = await Swal.fire({
             title: "Transfer Ticket",
@@ -214,12 +193,37 @@ const History = ({ walletProvider, connectedAddress }) => {
         }
     };
 
+    const checkTicketResoldStatus = async (ticketId) => {
+        try {
+            const resalePrice = await getResalePrice(ticketId);
+            console.log(`resalePrice - ${ticketId}:`, resalePrice);
+            const ticketResoldStatus = await getTicketMetadata(ticketId);
+            console.log(`ticketResoldStatus - ${ticketId}:`, ticketResoldStatus.isResold);
+            if (resalePrice && ticketResoldStatus) {
+                if (resalePrice <= 0 && ticketResoldStatus.isResold == true) {
+                    return true;
+                }
+                return false;
+            }
+        } catch (error) {
+            console.log(error);
+            let errorMsg = "An unexpected error occurred.";
+            if (error.reason) {
+                return errorScenario(errorMessage(error));
+            } else {
+                return errorScenario(errorMsg);
+            }
+        }
+    };
+
     const checkTicketTransferredStatus = async (ticketId) => {
         try {
-            const owner = await getOwnerOfTicket(ticketId);
-            if (owner) {
-                if (owner.toLowerCase() != connectedAddress.toLowerCase()) {
-                    console.log("owner:", owner);
+            const ticketOwner = await getOwnerOfTicket(ticketId);
+            console.log(`ticketOwner - ${ticketId}:`, ticketOwner);
+            const ticketResoldStatus = await getTicketMetadata(ticketId);
+            console.log(`ticketResoldStatus - ${ticketId}:`, ticketResoldStatus.isResold);
+            if (ticketOwner && ticketResoldStatus) {
+                if (ticketOwner.toLowerCase() != connectedAddress.toLowerCase() && ticketResoldStatus.isResold == true) {
                     return true;
                 }
                 return false;
@@ -237,9 +241,31 @@ const History = ({ walletProvider, connectedAddress }) => {
 
     const checkTicketValidatedStatus = async (ticketId) => {
         try {
-            const ticketValidated = await getTicketMetadata(ticketId);
-            if (ticketValidated) {
-                if (ticketValidated.isUsed) {
+            const ticketValidatedStatus = await getTicketMetadata(ticketId);
+            console.log(`ticketValidatedStatus - ${ticketId}:`, ticketValidatedStatus.isUsed);
+            if (ticketValidatedStatus) {
+                if (ticketValidatedStatus.isUsed == true) {
+                    return true;
+                }
+                return false;
+            }
+        } catch (error) {
+            console.log(error);
+            let errorMsg = "An unexpected error occurred.";
+            if (error.reason) {
+                return errorScenario(errorMessage(error));
+            } else {
+                return errorScenario(errorMsg);
+            }
+        }
+    };
+
+    const checkOwnershipOfTheTicket = async (ticketId) => {
+        try {
+            const ticketOwner = await getOwnerOfTicket(ticketId);
+            console.log(`ticketOwner - ${ticketId}:`, ticketOwner);
+            if (ticketOwner) {
+                if (ticketOwner.toLowerCase() != connectedAddress.toLowerCase()) {
                     return true;
                 }
                 return false;
@@ -298,7 +324,7 @@ const History = ({ walletProvider, connectedAddress }) => {
                                 alt={ticket.name}
                                 className="w-full h-72 object-cover cursor-pointer"
                                 onClick={
-                                    (!ticket.validatedStatus && (!ticket.resoldStatus || !ticket.transferredStatus))
+                                    (ticket.validatedStatus == false && ticket.ownershipOfTheTicketStatus == false)
                                         ? () => showPopUpNFTQR(ticket.ticketId)
                                         : null
                                 }
@@ -312,8 +338,8 @@ const History = ({ walletProvider, connectedAddress }) => {
                                 <div className="flex items-center text-white mb-1 space-x-2">
                                     <span>{ticket.resalePriceCap} ETH</span>
                                     <span>•</span>
-                                    <span className={`px-2 py-1 rounded text-xs font-medium ${ticket.validatedStatus ? "bg-green-600" : "bg-yellow-500"}`}>
-                                        {ticket.validatedStatus ? "Validated" : "Not Validated"}
+                                    <span className={`px-2 py-1 rounded text-xs font-medium ${ticket.validatedStatus == true ? "bg-green-600" : "bg-yellow-500"}`}>
+                                        {ticket.validatedStatus == true ? "Validated" : "Not Validated"}
                                     </span>
                                 </div>
                                 <p className="text-sm text-white line-clamp-3">At: {ticket.location}</p>

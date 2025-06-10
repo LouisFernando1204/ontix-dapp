@@ -37,7 +37,7 @@ const EventDetail = ({ walletProvider, connectedAddress }) => {
       fetchEventProceeds();
       fetchEventOfficial();
     }
-  }, [id, updateView, eventProceeds]);
+  }, [id, updateView, eventProceeds, connectedAddress]);
 
   const errorScenario = (errorMsg = "Unexpected Error. Please try again later!") => {
     setIsLoading(false);

@@ -55,12 +55,17 @@ const Verification = ({ walletProvider, connectedAddress }) => {
                     { fps: 10, qrbox: 250 },
                     async (decodedText) => {
                       if (scanHistory.includes(decodedText) || !connectedAddress) {
+                        beepSoundRef.current?.play()
+                          .then(() => console.log("Beep played"))
+                          .catch(err => console.warn("Error playing beep:", err));
                         setCheckinStatus("error");
                         setEventData(null);
                         setScanResult(decodedText);
-                        if (beepSoundRef.current) beepSoundRef.current.play();
                         return;
                       }
+                      await beepSoundRef.current?.play()
+                        .then(() => console.log("Beep played"))
+                        .catch(err => console.warn("Error playing beep:", err));
                       const regex = /#(\d+)/;
                       const match = decodedText.match(regex);
                       if (!match) {
@@ -77,7 +82,6 @@ const Verification = ({ walletProvider, connectedAddress }) => {
                           setEventData(eventDetail);
                           setCheckinStatus("success");
                           setCheckinTime(new Date().toLocaleTimeString());
-                          if (beepSoundRef.current) beepSoundRef.current.play();
                         }
                       } catch (error) {
                         setCheckinStatus("error");
@@ -127,7 +131,7 @@ const Verification = ({ walletProvider, connectedAddress }) => {
         console.warn("QR cleanup error:", err);
       }
     };
-  }, [scanHistory]);
+  }, [scanHistory, connectedAddress]);
 
   const errorScenario = (errorMsg = "Unexpected Error. Please try again later!") => {
     setIsLoading(false);
@@ -357,7 +361,7 @@ const Verification = ({ walletProvider, connectedAddress }) => {
               onClick={() => handleResetScanner()}
               className="w-full px-6 py-3 bg-pink-600 hover:bg-pink-500 rounded-lg text-white font-semibold transition"
             >
-              Scan Next User
+              Scan Next Ticket
             </button>
           </div>
         )}

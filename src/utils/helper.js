@@ -40,7 +40,7 @@ export function successModal(title, transactionHash, eventArgsArray = []) {
       <p style="margin-bottom: 10px;">Transaction detail can be seen below:</p>
       <p>
         <a 
-          href="https://holesky.etherscan.io/tx/${transactionHash}" 
+          href="https://sepolia-optimism.etherscan.io/tx/${transactionHash}" 
           target="_blank" 
           style="color: blue; text-decoration: underline; font-size: 1rem;">
           ${transactionHash}
