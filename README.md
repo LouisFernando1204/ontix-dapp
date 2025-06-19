@@ -18,6 +18,7 @@ Welcome to **OnTix**, the next-generation NFT-based ticketing platform powered b
 - 🪙 **Contract Address** : [View on Explorer](https://sepolia-optimism.etherscan.io/address/0x9eecA71FD691985F3cb5a326E8a86dA56c82Ab83)
 - 🛠️ **Backend** : [View Code](https://github.com/richiereubenn/OnTix-backend)
 - 📊 **Overview Report** : [View File](https://docs.google.com/document/d/1s3NPz4nWYaGZue2N1y0R2QV1JdKo81D2/edit?usp=sharing&ouid=112308837250771571526&rtpof=true&sd=true)
+- 📖 **Usage Guidebook** : [View File](https://drive.google.com/file/d/1DrwJk_ZaKJkhFOJ7Ywhsb02opDuwxnDs/view?usp=sharing)
 - 🎥 **Demo Video** : [Watch Video](https://youtu.be/6wl0YcwWgVE)
 
 ## ⚙️ Tech Stack Behind OnTix
